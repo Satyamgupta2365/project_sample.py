@@ -1,6 +1,7 @@
 streamlit
 google-generativeai
 matplotlib
+groq
 python-dotenv
 langchain
 PyPDF2
