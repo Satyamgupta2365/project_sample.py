@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from groq import Groq
 import google.generativeai as genai
 from PIL import Image  
+import streamlit as st
+import calendar
+from datetime import datetime
 
 API_KEY_GROQ = "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"
 API_KEY_GENAI = "AIzaSyC4f-d-Igv6UWdHKoMgZcNfRTeQBFVgtUw"
@@ -22,7 +25,8 @@ app_mode = st.sidebar.selectbox(
         "Food Nutrient and Calorie Estimator",
         "Food Allergen Checker",
         "Diet Recommendation for Chronic Conditions",
-        "Personalized Diet and Fitness Syncing"
+        "Personalized Diet and Fitness Syncing",
+        "Meal Calendar"  # Corrected spelling
     ]
 )
 
@@ -124,7 +128,6 @@ def load_dynamic_css():
         unsafe_allow_html=True
     )
 load_dynamic_css()
-
 if app_mode == "Home":
     # Display full-width image
     st.image("Green Illustrative Food Journal Presentation.jpg", use_column_width=True)
@@ -152,13 +155,6 @@ if app_mode == "Home":
             </ul>
         </div>
 
-        <div class="feature-bg">
-            <h2>About Us</h2>
-            <p>
-                NutriGuide.AI was founded with the mission to make healthy eating easier, smarter, and personalized for everyone. Our team of experts in nutrition, artificial intelligence, and health technology have come together to create an app that helps you make informed food choices, track your meals, and stay on top of your health goals.
-            </p>
-        </div>
-
         <div class="feature-section">
             <h2>Why Choose NutriGuide.AI?</h2>
             <ul>
@@ -169,25 +165,28 @@ if app_mode == "Home":
             </ul>
         </div>
 
-        <div class="feature-section">
-            <h2>Features</h2>
-            <ul>
-                <li><b>Personalized Meal Plans</b> – Tailored to your dietary preferences, lifestyle, and health goals.</li>
-                <li><b>Food Calorie Estimator</b> – Quickly calculate the nutritional value of your meals.</li>
-                <li><b>Food Allergen Checker</b> – Scan your food and check for potential allergens.</li>
-                <li><b>Chronic Conditions Support</b> – Get diet recommendations for specific conditions like diabetes, hypertension, and more.</li>
-                <li><b>Fitness Syncing</b> – Sync with your fitness routine to optimize diet and exercise together.</li>
-            </ul>
-        </div>
-
         <div class="feature-bg">
             <h2>Ready to Start Your Nutrition Journey?</h2>
             <p>Join the thousands of users already using NutriGuide.AI to take control of their health. Try it today!</p>
             <div class="stButton"><button>Get Started</button></div>
         </div>
+
+        <div class="feature-bg">
+            <h2>About Us</h2>
+            <p>
+                NutriGuide.AI was founded with the mission to make healthy eating easier, smarter, and personalized for everyone. Our team of experts in nutrition, artificial intelligence, and health technology have come together to create an app that helps you make informed food choices, track your meals, and stay on top of your health goals.
+            </p>
+            <p>
+                This website is proudly created by a passionate team of AI enthusiasts:
+            </p>
+            <ul>
+                <li><b>Akansha Sharma</b> – <a href="https://linkedin.com/in/akansha-sharma" target="_blank">LinkedIn</a> | <a href="https://github.com/akanshasharma" target="_blank">GitHub</a></li>
+                <li><b>Vashili NS</b> – <a href="https://linkedin.com/in/vashili-ns" target="_blank">LinkedIn</a> | <a href="https://github.com/vashilins" target="_blank">GitHub</a></li>
+                <li><b>Satyam Gupta</b> – <a href="https://www.linkedin.com/in/satyam-gupta-41606a28a" target="_blank">LinkedIn</a> | <a href="https://github.com/Satyamgupta2365" target="_blank">GitHub</a></li>
+        </div>
     """,
-    unsafe_allow_html=True
-)
+        unsafe_allow_html=True
+    )
 
     # Footer Section
     st.markdown(
@@ -543,3 +542,104 @@ elif app_mode == "Personalized Diet and Fitness Syncing":
         ax.set_title("Weekly Calorie Intake")
         ax.legend()
         st.pyplot(fig)
+
+# Feature 6: Meal Calendar
+if app_mode == "Meal Calendar":
+    st.title("Meal Planner Calendar")
+    
+    if "meal_data" not in st.session_state:
+        st.session_state.meal_data = {}
+        
+    def generate_dates(year, month):
+        num_days = calendar.monthrange(year, month)[1]  # Get the number of days in the month
+        return num_days
+
+    def get_meal_input(date, meal_type):
+        meal = st.text_input(f"Enter {meal_type} details for {date}:", key=f"{meal_type}_{date}")
+        return meal
+
+    def show_calendar(year, month):
+        num_days = generate_dates(year, month)
+        cal = calendar.monthcalendar(year, month)
+        today = datetime.now().strftime("%d/%m/%Y")
+
+        st.write(f"**Calendar for {calendar.month_name[month]} {year}**")
+        html_code = '<table style="width: 100%; text-align: center; border-collapse: collapse;">'
+        html_code += '<tr>'  # Table header with days of the week
+        for day_name in calendar.day_name:
+            html_code += f'<th style="padding: 5px; border: 1px solid #ddd; background-color: #f2f2f2;">{day_name}</th>'
+        html_code += '</tr>'
+        
+        for week in cal:
+            html_code += '<tr>'
+            for day in week:
+                if day == 0:
+                    html_code += '<td style="padding: 10px; border: 1px solid #ddd;"></td>'  # Empty cell
+                else:
+                    day_str = f"{day}/{month}/{year}"
+                    if day_str == today:
+                        html_code += f'<td style="padding: 10px; background-color: lightblue; border: 1px solid #ddd;">{day}</td>'
+                    elif day_str in st.session_state.meal_data:
+                        html_code += f'<td style="padding: 10px; background-color: lightgreen; border: 1px solid #ddd;">{day}</td>'
+                    else:
+                        html_code += f'<td style="padding: 10px; border: 1px solid #ddd;">{day}</td>'
+            html_code += '</tr>'
+        html_code += '</table>'
+        st.markdown(html_code, unsafe_allow_html=True)
+
+    year = st.selectbox('Select Year', list(range(2024, 2029)), index=0)
+    month = st.selectbox('Select Month', list(range(1, 13)), index=0)
+
+    dates = [f"{day}/{month}/{year}" for day in range(1, generate_dates(year, month) + 1)]
+    selected_date = st.selectbox('Select Date to Add/Review Meal Plan', dates)
+    show_calendar(year, month)
+
+    if selected_date:
+        existing_meals = st.session_state.meal_data.get(selected_date, {})
+        st.subheader(f"Meal Plan for {selected_date}")
+        
+        meal_types = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+        for meal_type in meal_types:
+            if meal_type in existing_meals:
+                st.write(f"{meal_type}: {existing_meals[meal_type]}")
+            else:
+                st.write(f"{meal_type}: No meal added yet")
+        
+        st.subheader(f"Add or Edit Meal Plan for {selected_date}")
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            breakfast = get_meal_input(selected_date, 'Breakfast')
+        with col2:
+            lunch = get_meal_input(selected_date, 'Lunch')
+        with col3:
+            snacks = get_meal_input(selected_date, 'Snacks')
+        with col4:
+            dinner = get_meal_input(selected_date, 'Dinner')
+
+        if st.button('Save Meal Plan', key=f"save_button_{selected_date}"):
+            st.session_state.meal_data[selected_date] = {
+                'Breakfast': breakfast if breakfast else existing_meals.get('Breakfast', ''),
+                'Lunch': lunch if lunch else existing_meals.get('Lunch', ''),
+                'Snacks': snacks if snacks else existing_meals.get('Snacks', ''),
+                'Dinner': dinner if dinner else existing_meals.get('Dinner', '')
+            }
+            st.success(f"Meal Plan for {selected_date} has been saved.")
+        
+        if st.button(f"Delete Meal Plan for {selected_date}", key=f"delete_button_{selected_date}"):
+            if selected_date in st.session_state.meal_data:
+                del st.session_state.meal_data[selected_date]
+                st.success(f"Meal Plan for {selected_date} has been deleted.")
+            else:
+                st.error(f"No meal plan found for {selected_date}.")
+
+    if st.button("Show Monthly Meal Summary"):
+        meal_summary = {date: meals for date, meals in st.session_state.meal_data.items() if f"/{month}/{year}" in date}
+        if meal_summary:
+            st.write("### Monthly Meal Summary")
+            for date, meals in meal_summary.items():
+                st.write(f"**{date}**")
+                for meal_type, meal in meals.items():
+                    st.write(f"- {meal_type}: {meal}")
+        else:
+            st.write("No meals planned for this month.")
